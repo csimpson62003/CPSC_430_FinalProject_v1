@@ -14,7 +14,7 @@ from game_world import GameWorld
 controls = {
     'escape': 'toggleMouseMove',
     't': 'teleport',
-    'mouse1': 'toggleTexture',
+    'mouse1': 'weapon_action',
     'space': 'jump',
 }
 
@@ -44,7 +44,11 @@ class Main(ShowBase):
         self.SpeedRot = 0.05
         self.CursorOffOn = 'Off'
         self.props = WindowProperties()
-        self.props.setCursorHidden(True)
+        self.props.setSize(500,500)
+     
+       # self.props.setCursorHidden(True)
+
+
         self.win.requestProperties(self.props)
 
         self.camera_pitch = 0
@@ -74,13 +78,8 @@ class Main(ShowBase):
         return x + delta_x*distance, y + delta_y*distance, z + delta_z*distance
 
     def tick(self, task):
-        if 'toggleMouseMove' in self.input_events:
-            if self.CursorOffOn == 'Off':
-                self.CursorOffOn = 'On'
-                self.props.setCursorHidden(False)
-            else:
-                self.CursorOffOn = 'Off'
-                self.props.setCursorHidden(True)
+        if 'weapon_action' in self.input_events:
+            pub.sendMessage('weapon_action', action=self.input_events)
 
             self.win.requestProperties(self.props)
 
@@ -134,8 +133,11 @@ class Main(ShowBase):
         self.game_world.tick(dt)
         self.world_view.tick()
 
-        if self.game_world.get_property("quit"):
-            sys.exit()
+        # Broadcast player position for enemies
+        if self.player:
+            player_pos = self.player.getPos()
+            pub.sendMessage('player_position', position=[player_pos.x, player_pos.y, player_pos.z])
+
 
         self.input_events.clear()
         return Task.cont
@@ -148,7 +150,7 @@ class Main(ShowBase):
 
     def move_player(self, events=None):
         speed = Vec3(0, 0, 0)
-        delta = 5.0
+        delta = 10
 
         if inputState.isSet('moveForward'):
             speed.setY(delta)
@@ -163,7 +165,7 @@ class Main(ShowBase):
             speed.setX(delta)
 
         if 'jump' in events:
-            self.player.startJump(2)
+            self.player.startJump(5)
 
         self.player.setLinearMovement(speed)
 

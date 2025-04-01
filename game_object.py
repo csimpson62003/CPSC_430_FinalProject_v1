@@ -11,6 +11,8 @@ class GameObject:
         self.y_rotation = 0
         self.z_rotation = 0
         self.size = size
+        self.health = 100
+        self.is_collision_source = True
 
     @property
     def physics(self):
@@ -90,3 +92,4 @@ class GameObject:
 
     def collision(self, other):
         pass
+    
